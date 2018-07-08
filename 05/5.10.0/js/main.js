@@ -10,6 +10,10 @@ const margin = {left:100, right: 110, top: 10, bottom: 100};
 const areaWidth = svgWidth - margin.left - margin.right;
 const areaHeight = svgHeight - margin.top - margin.bottom;
 
+let time = 0;
+let interval;
+let formattedData;
+
 const svg = d3.select("#chart-area")
 	.append("svg")
 	.attr('width', svgWidth)
@@ -25,6 +29,19 @@ const xAxisGroup = area.append('g')
 const yAxisGroup = area.append('g')
 	.attr('class', 'y axis');
 
+
+//Tooltip
+const tip = d3.tip().attr('class', 'd3-tip').html((d) => {
+	let text = `<strong>Country: </strong><span style="color:red">${d.country}</span><br>`;
+	text += `<strong>Continent: </strong><span style="color:red">${d.continent}</span><br>`;
+	text += `<strong>Life expectancy: </strong><span style="color:red">${d3.format(".2f")(d.life_exp)}</span><br>`;
+	text += `<strong>Income: </strong><span style="color:red">${d3.format("$,.0f")(d.income)}</span><br>`;
+	text += `<strong>Population: </strong><span style="color:red">${d3.format(",.0f")(d.population)}</span><br>`;
+	return text;
+});
+area.call(tip);
+
+//scales
 const x = d3.scaleLog().domain([300, 150000])
 	.range([0, areaWidth]).base(10);
 const y = d3.scaleLinear().domain([0, 90])
@@ -32,6 +49,28 @@ const y = d3.scaleLinear().domain([0, 90])
 const r = d3.scaleLinear().domain([2000, 1400000000])
 	.range([5, 50]);
 const color = d3.scaleOrdinal(d3.schemeCategory10);
+
+//Legend
+const continents = ["europe", "asia", "americas", "africa"];
+const legend = area.append("g")
+    .attr("transform", `translate(${areaWidth - 10}, ${areaHeight - 125})`);
+
+continents.forEach((continent, i)=> {
+    let legendRow = legend.append("g")
+        .attr('transform', `translate(0, ${i*20})`);
+
+    legendRow.append("rect")
+        .attr("width", 10)
+        .attr("height", 10)
+        .attr("fill", color(continent));
+
+    legendRow.append('text')
+		.attr("x", -10)
+		.attr("y", 10)
+		.attr('text-anchor', "end")
+		.style('text-transform', "capitalize")
+		.text(continent);
+});
 
 area.append("text")
 	.attr("class", "x axis-label")
@@ -60,7 +99,7 @@ let yearLabel = area.append("text")
 	.text('1800');
 
 d3.json("data/data.json").then(function(data){
-	const formattedData = data.map(element => {
+	formattedData = data.map(element => {
 		return {
 			year: element.year,
 			countries: element.countries.filter(country => country.income && country.life_exp)
@@ -69,20 +108,64 @@ d3.json("data/data.json").then(function(data){
 
 	console.log(formattedData);
 
-	let index = 0;
-
-	d3.interval(()=> {
-		updateChart(formattedData[index].countries, formattedData[index].year);
-		index++;
-		if (formattedData[index].year === '2014') {
-			index = 0;
-		}
-	}, 100);
+    updateChart(formattedData[0].countries, formattedData[0].year);
 });
+
+$('#play-button')
+	.on('click', function () {
+		let button = $(this);
+		if (button.text() === 'Play') {
+            button.text("Pause");
+            interval = setInterval(step, 100);
+		} else {
+            button.text("Play");
+            clearInterval(interval);
+		}
+	});
+
+$("#reset-button")
+	.on('click', function () {
+		time = 0;
+        updateChart(formattedData[0].countries, formattedData[0].year);
+    });
+
+$("#continent-select")
+	.on('change', function () {
+        updateChart(formattedData[time].countries, formattedData[time].year);
+    });
+
+$('#date-slider').slider({
+	max: 2014,
+	min: 1800,
+	step: 1,
+	slide: function (e, ui) {
+		time = ui.value - 1800;
+        updateChart(formattedData[time].countries, formattedData[time].year);
+    }
+});
+
+function step() {
+    updateChart(formattedData[time].countries, formattedData[time].year);
+    time++;
+    if (formattedData[time].year === '2014') {
+        time = 0;
+    }
+}
 
 function updateChart(data, year) {
 	const animation = d3.transition().duration(100);
-	let circles = area.selectAll('circle').data(data, d => {
+
+	let continent = $('#continent-select').val();
+
+	let filteredData = data.filter(d => {
+		if (continent === 'all') {
+			return true;
+		} else {
+			return d.continent === continent;
+		}
+	});
+
+	let circles = area.selectAll('circle').data(filteredData, d => {
 		return d.country;
 	});
 
@@ -104,6 +187,8 @@ function updateChart(data, year) {
 		.attr('cy', d => y(d.life_exp))
 		.attr('r', d => r(d.population))
 		.attr('fill', d => color(d.continent))
+		.on('mouseover', tip.show)
+		.on('mouseout', tip.hide)
 		.merge(circles)
 			.transition(animation)
 				.attr('cx', d => x(d.income))
@@ -111,6 +196,9 @@ function updateChart(data, year) {
 				.attr('cy', d => y(d.life_exp));
 
 	yearLabel.text(year);
+	$("#year")[0].innerHeight = time + 1800;
+	
+	$("#date-slider").slider('value', +(time + 1800));
 }
 
 

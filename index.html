@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<style>
+    @charset "UTF-8";
+    .item {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+    .my-grid {
+        margin:0 auto;
+        background-color: blue;
+        display: flex;
+        flex-wrap: wrap;
+    }
+
+    .item {
+        flex-grow: 1;
+        flex-shrink: 0.5;
+        flex-basis: calc(50% - 30px);
+    }
+    @media (min-width: 1200px) {
+        .my-grid  { background: brown; }
+    }
+    @media (min-width: 992px) and (max-width: 1199px) {
+        .my-grid  { background: orange; }
+    }
+    @media (min-width: 768px) and (max-width: 991px) {
+        .my-grid  { background: red; }
+    }
+    @media screen and (max-width: 767px) {
+        .my-grid  { background: green; }
+    }
+</style>
+
+<div class="my-grid">
+    <div class="item">grid item #1</div>
+    <div class="item">grid item #2</div>
+    <div class="item">grid item #3</div>
+    <div class="item">grid item #4</div>
+    <div class="item">grid item #5</div>
+    <div class="item">grid item #6</div>
+    <div class="item">grid item #7</div>
+    <div class="item">grid item #8</div>
+</div>
+
+</body>
+</html>
