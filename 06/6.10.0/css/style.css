@@ -25,11 +25,6 @@
   shape-rendering: crispEdges;
 }
 
-.line {
-  fill: none;
-  stroke-width: 2px;
-}
-
 .overlay {
   fill: none;
   pointer-events: all;
@@ -54,6 +49,6 @@
 
 .line {
   fill: none;
-  stroke-width: 3px;
+  stroke-width: 2px;
   stroke: grey;
 }

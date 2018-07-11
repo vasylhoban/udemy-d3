@@ -26,7 +26,7 @@ var x = d3.scaleTime().range([0, width]);
 var y = d3.scaleLinear().range([height, 0]);
 
 // Axis generators
-var xAxisCall = d3.axisBottom()
+var xAxisCall = d3.axisBottom();
 var yAxisCall = d3.axisLeft()
     .ticks(6)
     .tickFormat(function(d) { return parseInt(d / 1000) + "k"; });
@@ -53,9 +53,11 @@ var line = d3.line()
     .x(function(d) { return x(d.year); })
     .y(function(d) { return y(d.value); });
 
-d3.json("data/example.json").then(function(data) {
+d3.json("data/coins.json").then(function(data) {
     // Data cleaning
-    data.forEach(function(d) {
+  console.log(data);
+
+    data['bitcoin'].forEach(function(d) {
         d.year = parseTime(d.year);
         d.value = +d.value;
     });
@@ -66,8 +68,8 @@ d3.json("data/example.json").then(function(data) {
         d3.max(data, function(d) { return d.value; }) * 1.005]);
 
     // Generate axes once scales have been set
-    xAxis.call(xAxisCall.scale(x))
-    yAxis.call(yAxisCall.scale(y))
+    xAxis.call(xAxisCall.scale(x));
+    yAxis.call(yAxisCall.scale(y));
 
     // Add line to chart
     g.append("path")

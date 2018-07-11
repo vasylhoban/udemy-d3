@@ -90,6 +90,27 @@ area.append("text")
 	.attr("transform", "rotate(-90)")
 	.text('Life Expectancy (Years)');
 
+const continents = ['europe', 'asia', 'americas', 'africa'];
+const legend = area.append('g')
+	.attr('transform', `translate(${areaWidth - 10}, ${areaHeight - 125})`);
+
+continents.forEach((continent, i) => {
+	let legendRow = legend.append('g')
+		.attr('transform', `translate(0, ${i*20})`);
+
+	legendRow.append('rect')
+		.attr('width', 10)
+		.attr('height', 10)
+		.attr('fill', color(continent));
+
+	legendRow.append('text')
+		.attr("x", -10)
+		.attr("y", 10)
+		.attr("text-anchor", "end")
+		.style("text-transform", "capitalize")
+		.text(continent);
+});
+
 let yearLabel = area.append("text")
 	.attr("font-size", "40px")
 	.attr("font-weight", "bold")
